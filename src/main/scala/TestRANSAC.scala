@@ -35,9 +35,8 @@ object TestRANSAC extends App {
     Line(x, y)
   }
 
-  def test_point_closer_than(threshold: Double)(l: Line, p: Point): Boolean = {
+  def test_point_closer_than(threshold: Double)(l: Line)(p: Point): Boolean =
     abs(l distance p) < threshold
-  }
 
   def sample_without_replacement[D](N: Int, data: Seq[D], sample: List[D] = List.empty): List[D] = {
     if (N <= 0) sample else {
