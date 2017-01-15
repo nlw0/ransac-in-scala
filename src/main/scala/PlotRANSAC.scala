@@ -1,10 +1,14 @@
+import java.awt.Color
+
+import breeze.linalg.DenseVector
+import breeze.plot._
 import estimation.RobustEstimator
 import geometry.{Line, Point}
 
 import scala.math.abs
 import scala.util.Random
 
-object TestRANSAC extends App {
+object PlotRANSAC extends App {
 
   val n_outliers = 100
   val n_inliers = 100
@@ -21,6 +25,20 @@ object TestRANSAC extends App {
 
   println(s"Original model $original_model")
   println(s"Estimated model: $estimated_model")
+
+  val xx = breeze.linalg.DenseVector[Double]((data map { p => p.x }).toArray)
+  val yy = breeze.linalg.DenseVector[Double]((data map { p => p.y }).toArray)
+
+  val fig = Figure()
+  val plt = fig.subplot(0)
+  plt += scatter(xx, yy, { _ => 0.1 }, colors = { _ => Color.BLACK })
+  val aa = original_model(-4)
+  val bb = original_model(4)
+  val cc = estimated_model(-4)
+  val dd = estimated_model(4)
+  plt += plot(DenseVector[Double](-4, 4), DenseVector[Double](aa, bb), style = '-', colorcode = "b")
+  plt += plot(DenseVector[Double](-4, 4), DenseVector[Double](cc, dd), style = '-', colorcode = "r")
+
 
   def pick_point_pair(data: Seq[Point]): (Point, Point) = {
     val List(p1, p2) = sample_without_replacement(2, data)
@@ -50,11 +68,10 @@ object TestRANSAC extends App {
   def generate_data(n_outliers: Int, n_inliers: Int, line: Line, noise: Double) = {
     val r = 10.0 // Size of test space
 
-    val outliers = List.fill(n_outliers) { (Point.nextUniform - Point(0.5, 0.5)) * r }
-    val inliers = List.fill(n_inliers) {
-      val x = (Random.nextDouble - 0.5) * r / 2
-      Point(x, line(x)) + Point.nextGaussian * noise
-    }
+    val outliers = (1 to n_outliers) map { _ => (Point.nextUniform - Point(0.5, 0.5)) * r }
+    val inliers = (1 to n_inliers)
+      .map(_ => (Random.nextDouble - 0.5) * r / 2)
+      .map(x => Point(x, line(x)) + Point.nextGaussian * noise)
 
     outliers ++ inliers
   }
